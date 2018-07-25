@@ -220,7 +220,7 @@ class MF(BaseEstimator, TransformerMixin):
                 batch_pos = interaction_data.pos_batch_generator(phase='train', batch_size=self.batch_size)
                 batch_loss = self.partial_fit(batch_pos)
                 train_loss += batch_loss / self.neg_samples
-
+                print("train loss:", train_loss)
             t2 = time()
             # output validation
             print("train loss:", train_loss)
