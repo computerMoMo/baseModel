@@ -210,6 +210,7 @@ class MF(BaseEstimator, TransformerMixin):
 
     def train(self, interaction_data):
         for epoch in range(self.epoch):
+            print("epoch:", epoch)
             t1 = time()
             total_batch = interaction_data.n_train // self.batch_size
 
