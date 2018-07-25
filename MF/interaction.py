@@ -13,9 +13,13 @@ class Interaction(object):
 
         self.features_M = 0
         self.all_ratings = None
-        self.train_ratings =np.loadtxt( '../Data/user_item_train.txt')
+        self.train_ratings = np.loadtxt( '../Data/user_item_train.txt')
+        print("load train data done!")
         # self.valid_ratings = np.loadtxt( '../Data/valid_50.rate', dtype=int, delimiter=',')
-        self.test_ratings = np.loadtxt( '../Data/user_item_test_0.0.txt')
+        # self.test_ratings = np.loadtxt( '../Data/user_item_test_0.0.txt')
+        self.test_ratings = np.loadtxt( '../Data/test_small.txt')
+        print("load test data done!")
+
         
         self.n_train = len(self.train_ratings)
         self.n_test = len(self.test_ratings)
