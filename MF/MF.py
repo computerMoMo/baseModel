@@ -24,9 +24,9 @@ from time import time
 import argparse
 from tensorflow.contrib.layers.python.layers import batch_norm as batch_norm
 
-from .factory import *
-from .interaction import Interaction
-from .evaluation import eval_model_pro
+from factory import *
+from interaction import Interaction
+from evaluation import eval_model_pro
 
 
 #################### Arguments ####################
