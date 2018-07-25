@@ -216,13 +216,14 @@ class MF(BaseEstimator, TransformerMixin):
 
             train_loss = 0
             for i in range(total_batch):
+                print('[%d] over [%d] training done' % (i, total_batch))
                 batch_pos = interaction_data.pos_batch_generator(phase='train', batch_size=self.batch_size)
                 batch_loss = self.partial_fit(batch_pos)
                 train_loss += batch_loss / self.neg_samples
-                # print('[%d] over [%d] training done' %(i, total_batch))
+
             t2 = time()
             # output validation
-
+            print("train loss:", train_loss)
             if np.isnan(train_loss) == True:
                 sys.exit()
             valid_hits, valid_ndcgs = 0., 0.
