@@ -3,7 +3,6 @@ import pandas as pd
 import numpy as np
 import random
 from time import time
-from MF.factory import *
 
 
 class Interaction(object):
