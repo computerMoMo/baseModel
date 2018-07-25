@@ -2,6 +2,8 @@ import numpy as np
 import pandas as pd
 from time import time
 from evaluation import eval_model_pro
+import sys
+import codecs
 
 
 def item_freq(train_ratings):
@@ -37,15 +39,22 @@ def evaluate(data, item_freq_dict):
             i_freq = 1
         y_pred[j, 0] = i_freq
 
-    hits, ndcgs = eval_model_pro(y_gnd, y_pred, K=10, row_len=100+1)
-    return hits, ndcgs
+    hit_scores = []
+    ndcg_scores = []
+    for k in range(1, 16):
+        hits, ndcgs = eval_model_pro(y_gnd, y_pred, K=k, row_len=100+1)
+        hit_scores.append(hits)
+        ndcg_scores.append(ndcgs)
+    return hit_scores, ndcg_scores
+
 
 if __name__ == '__main__':
     t1 = time()
 
     path = '../Data/'
+    test_file_path = "user_item_test_"+sys.argv[1]+".txt"
     train_ratings = np.loadtxt(path + 'user_item_train.txt')
-    test_ratings = np.loadtxt(path + 'test_small.txt')
+    test_ratings = np.loadtxt(path + test_file_path)
 
     print('already load train and test data')
 
@@ -54,6 +63,19 @@ if __name__ == '__main__':
 
     test_hits, test_ndcgs = evaluate(test_ratings, item_freq_dict)
 
-    final_results = "prediction results: test=[%.4f %.4f] @[%.1f s]" % (test_hits, test_ndcgs, time() - t1)
-    print(final_results)
+    print("cost time:", time()-t1)
+    print("hit scores:", test_hits)
+    print("ndcg scores:", test_ndcgs)
+
+    result_writer = codecs.open("../Output/ItemPop_"+sys.argv[1]+"_.res", mode="w", encoding="utf-8")
+    result_writer.write("hit scores:")
+    for hit_score in test_hits:
+        result_writer.write("%.5f\t" % hit_score)
+    result_writer.write("\n")
+
+    result_writer.write("ndcg scores:")
+    for ndcg_score in test_ndcgs:
+        result_writer.write("%.5f\t" % ndcg_score)
+    result_writer.write("\n")
+
 
