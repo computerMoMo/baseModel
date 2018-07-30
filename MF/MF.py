@@ -218,12 +218,12 @@ class MF(BaseEstimator, TransformerMixin):
             train_loss = 0
             train_reg_loss = 0
             for i in range(total_batch):
-                print('[%d] over [%d] training done' % (i, total_batch))
+                # print('[%d] over [%d] training done' % (i, total_batch))
                 batch_pos = interaction_data.pos_batch_generator(phase='train', batch_size=self.batch_size)
                 batch_origin_loss, batch_loss = self.partial_fit(batch_pos)
                 train_loss += batch_origin_loss / self.neg_samples
                 train_reg_loss += batch_loss / self.neg_samples
-                print("train batch loss:", batch_origin_loss/self.neg_samples, "train batch reg loss:", batch_loss/self.neg_samples)
+                # print("train batch loss:", batch_origin_loss/self.neg_samples, "train batch reg loss:", batch_loss/self.neg_samples)
             t2 = time()
             # output validation
             print("train loss:", train_loss/total_batch, "train reg loss:", train_reg_loss/total_batch)
@@ -323,8 +323,7 @@ if __name__ == '__main__':
     best_valid_ndcgs = max(model.test_ndcgs)
     best_epoch = model.test_ndcgs.index(best_valid_ndcgs)
 
-    final_results = "Best Iter(validation)=%d\t valid=[%.4f %.4f] test=[%.4f %.4f] @[%.1f s]" % (
-    best_epoch + 1, model.valid_hits[best_epoch], model.valid_ndcgs[best_epoch], model.test_hits[best_epoch],
+    final_results = "Best Iter(validation)=%d\t  test=[%.4f %.4f] @[%.1f s]" % (best_epoch + 1,  model.test_hits[best_epoch],
     model.test_ndcgs[best_epoch], time() - t1)
     print(final_results)
 
