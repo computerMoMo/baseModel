@@ -17,7 +17,7 @@ class Interaction(object):
         print("load train data done!")
         # self.valid_ratings = np.loadtxt( '../Data/valid_50.rate', dtype=int, delimiter=',')
         # self.test_ratings = np.loadtxt( '../Data/user_item_test_0.0.txt')
-        self.test_ratings = np.loadtxt( '../Data/test_small.txt')
+        self.test_ratings = np.loadtxt('../Data/test_small.txt')
         print("load test data done!")
 
         

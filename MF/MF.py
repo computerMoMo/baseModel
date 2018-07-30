@@ -64,6 +64,8 @@ def parse_args():
                         help='Whether to perform early stop (0 or 1)')
     parser.add_argument('--top_k', type=int, default=10,
                         help='Number of negative samples per positive one.')
+    parser.add_argument('--test', type=int, default=0, help='test flag 0 or 1')
+    parser.add_argument('--model_epoch', type=int, default=1, help='test flag 0 or 1')
     return parser.parse_args()
 
 
@@ -313,31 +315,47 @@ if __name__ == '__main__':
     # Training
     t1 = time()
     model = MF(interaction_data.features_U, interaction_data.features_M, args)
-    model.train(interaction_data)
+    if args.test == 0:
+        model.train(interaction_data)
 
-    # Find the best validation result across iterations
-    best_valid_ndcgs = max(model.test_ndcgs)
-    best_epoch = model.test_ndcgs.index(best_valid_ndcgs)
+        # Find the best validation result across iterations
+        best_valid_ndcgs = max(model.test_ndcgs)
+        best_epoch = model.test_ndcgs.index(best_valid_ndcgs)
 
-    final_results = "Best Iter(validation)=%d\t  test=[%.4f %.4f] @[%.1f s]" % (best_epoch + 1,  model.test_hits[best_epoch],
-    model.test_ndcgs[best_epoch], time() - t1)
-    print(final_results)
+        final_results = "Best Iter(validation)=%d\t  test=[%.4f %.4f] @[%.1f s]" % (best_epoch + 1,  model.test_hits[best_epoch],
+        model.test_ndcgs[best_epoch], time() - t1)
+        print(final_results)
 
-    save_path = 'Output/' + args.dataset + '/mf_%d.result' % (args.neg_num)
-    ensureDir(save_path)
-    f = open(save_path, 'a')
+        save_path = 'Output/' + args.dataset + '/mf_%d.result' % (args.neg_num)
+        ensureDir(save_path)
+        f = open(save_path, 'a')
 
-    f.write('MF: lambda=%.4f, lr=%.4f, top_k=%d, %s\n' % (args.lamda, args.lr, args.top_k, final_results))
-    f.close()
+        f.write('MF: lambda=%.4f, lr=%.4f, top_k=%d, %s\n' % (args.lamda, args.lr, args.top_k, final_results))
+        f.close()
 
-    score_writer = codecs.open("Output/scores.txt", mode="w", encoding="utf-8")
-    for epoch_id, (hit_item, ndcg_item) in enumerate(zip(model.all_hit_scores, model.all_ndcg_scores)):
-        score_writer.write("epoch %d:hit score:"% (epoch_id+1))
-        for hit_score in hit_item:
+        score_writer = codecs.open("Output/scores.txt", mode="w", encoding="utf-8")
+        for epoch_id, (hit_item, ndcg_item) in enumerate(zip(model.all_hit_scores, model.all_ndcg_scores)):
+            score_writer.write("epoch %d:hit score:" % (epoch_id+1))
+            for hit_score in hit_item:
+                score_writer.write("%.5f\t"%hit_score)
+            score_writer.write("ndcg score:")
+            for ndcg_score in ndcg_item:
+                score_writer.write("%.5f\t"%ndcg_score)
+            score_writer.write("\n")
+        score_writer.close()
+
+    else:
+        print("load model")
+        model.saver.restore(sess=model.sess, save_path="Output/models/model_"+str(args.model_epoch)+".ckpt")
+        print("testing...")
+        test_hits, test_ndcgs = model.evaluate(interaction_data.test_ratings)
+        print("test done")
+        score_writer = codecs.open("Output/test_results.txt", mode="w", encoding="utf-8")
+        score_writer.write("hit score:")
+        for hit_score in test_hits:
             score_writer.write("%.5f\t"%hit_score)
         score_writer.write("ndcg score:")
-        for ndcg_score in ndcg_item:
+        for ndcg_score in test_ndcgs:
             score_writer.write("%.5f\t"%ndcg_score)
         score_writer.write("\n")
-    score_writer.close()
-
+        score_writer.close()
