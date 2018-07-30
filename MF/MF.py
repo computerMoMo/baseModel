@@ -9,8 +9,7 @@ Lizi Liao (liaolizi.llz@gmail.com)
 '''
 from __future__ import print_function
 import os
-
-import os
+import codecs
 import sys
 import math
 import numpy as np
@@ -94,6 +93,9 @@ class MF(BaseEstimator, TransformerMixin):
         self.neg_samples = args.neg_samples
         self.row_len = args.neg_num + 1
         self.top_k = args.top_k
+
+        self.all_hit_scores = []
+        self.all_ndcg_scores = []
 
         # init all variables in a tensorflow graph
         self._init_graph()
@@ -214,15 +216,17 @@ class MF(BaseEstimator, TransformerMixin):
             total_batch = interaction_data.n_train // self.batch_size
 
             train_loss = 0
+            train_reg_loss = 0
             for i in range(total_batch):
                 print('[%d] over [%d] training done' % (i, total_batch))
                 batch_pos = interaction_data.pos_batch_generator(phase='train', batch_size=self.batch_size)
                 batch_origin_loss, batch_loss = self.partial_fit(batch_pos)
-                train_loss += batch_loss / self.neg_samples
+                train_loss += batch_origin_loss / self.neg_samples
+                train_reg_loss += batch_loss / self.neg_samples
                 print("train batch loss:", batch_origin_loss/self.neg_samples, "train batch reg loss:", batch_loss/self.neg_samples)
             t2 = time()
             # output validation
-            print("train loss:", train_loss)
+            print("train loss:", train_loss/total_batch, "train reg loss:", train_reg_loss/total_batch)
             if np.isnan(train_loss) == True:
                 sys.exit()
             valid_hits, valid_ndcgs = 0., 0.
@@ -235,8 +239,11 @@ class MF(BaseEstimator, TransformerMixin):
             # self.valid_hits.append(valid_hits)
             # self.valid_ndcgs.append(valid_ndcgs)
 
-            self.test_hits.append(test_hits)
-            self.test_ndcgs.append(test_ndcgs)
+            self.test_hits.append(test_hits[-1])
+            self.test_ndcgs.append(test_ndcgs[-1])
+
+            self.all_hit_scores.append(test_hits)
+            self.all_ndcg_scores.append(test_ndcgs)
 
             if self.verbose > 0 and epoch % self.verbose == 0:
                 print("Epoch %d [%.1f s]\t train_loss=%.4f valid=[%.4f %.4f %.1f] test=[%.4f %.4f %.1f]" % (epoch + 1,
@@ -245,8 +252,8 @@ class MF(BaseEstimator, TransformerMixin):
                                                                                                             valid_hits,
                                                                                                             valid_ndcgs,
                                                                                                             t3 - t2,
-                                                                                                            test_hits,
-                                                                                                            test_ndcgs,
+                                                                                                            test_hits[-1],
+                                                                                                            test_ndcgs[-1],
                                                                                                             t4 - t3))
             if self.early_stop > 0 and self.eva_termination(self.test_ndcgs, increas=True):
                 break
@@ -280,8 +287,13 @@ class MF(BaseEstimator, TransformerMixin):
 
         y_gnd = np.zeros(y_pred.shape)
         y_gnd[::self.row_len] = 1
-        hits, ndcgs = eval_model_pro(y_gnd, y_pred, K=self.top_k, row_len=self.row_len)
-        return hits, ndcgs
+        hits_list = []
+        ndcg_list = []
+        for i in range(1, 16):
+            hits, ndcgs = eval_model_pro(y_gnd, y_pred, K=i, row_len=self.row_len)
+            hits_list.append(hits)
+            ndcg_list.append(ndcgs)
+        return hits_list, ndcg_list
 
 
 if __name__ == '__main__':
@@ -308,8 +320,8 @@ if __name__ == '__main__':
     model.train(interaction_data)
 
     # Find the best validation result across iterations
-    best_valid_ndcgs = max(model.valid_ndcgs)
-    best_epoch = model.valid_ndcgs.index(best_valid_ndcgs)
+    best_valid_ndcgs = max(model.test_ndcgs)
+    best_epoch = model.test_ndcgs.index(best_valid_ndcgs)
 
     final_results = "Best Iter(validation)=%d\t valid=[%.4f %.4f] test=[%.4f %.4f] @[%.1f s]" % (
     best_epoch + 1, model.valid_hits[best_epoch], model.valid_ndcgs[best_epoch], model.test_hits[best_epoch],
@@ -322,3 +334,15 @@ if __name__ == '__main__':
 
     f.write('MF: lambda=%.4f, lr=%.4f, top_k=%d, %s\n' % (args.lamda, args.lr, args.top_k, final_results))
     f.close()
+
+    score_writer = codecs.open("Output/scores.txt", mode="w", encoding="utf-8")
+    for epoch_id, (hit_item, ndcg_item) in enumerate(zip(model.all_hit_scores, model.all_ndcg_scores)):
+        score_writer.write("epoch %d:hit score:"% (epoch_id+1))
+        for hit_score in hit_item:
+            score_writer.write("%.5f\t"%hit_score)
+        score_writer.write("ndcg score:")
+        for ndcg_score in ndcg_item:
+            score_writer.write("%.5f\t"%ndcg_score)
+        score_writer.write("\n")
+    score_writer.close()
+
