@@ -50,7 +50,7 @@ def parse_args():
                         help='Regularizer for bilinear part.')
     parser.add_argument('--lr', type=float, default=0.01,
                         help='Learning rate.')
-    parser.add_argument('--loss_type', nargs='?', default='log_loss',
+    parser.add_argument('--loss_type', nargs='?', default='square_loss',
                         help='Specify a loss type (square_loss or log_loss).')
     parser.add_argument('--optimizer', nargs='?', default='AdagradOptimizer',
                         help='Specify an optimizer type (AdamOptimizer, AdagradOptimizer, GradientDescentOptimizer, MomentumOptimizer).')
