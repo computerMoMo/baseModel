@@ -6,7 +6,7 @@ from time import time
 
 
 class Interaction(object):
-    def __init__(self, int_cate, neg_num):
+    def __init__(self, int_cate, neg_num, test_file_name):
    
         self.map_movie = '../Data/movie_id.txt'
         self.map_user= '../Data/user_id.txt'
@@ -17,7 +17,9 @@ class Interaction(object):
         print("load train data done!")
         # self.valid_ratings = np.loadtxt( '../Data/valid_50.rate', dtype=int, delimiter=',')
         # self.test_ratings = np.loadtxt( '../Data/user_item_test_0.0.txt')
-        self.test_ratings = np.loadtxt('../Data/test_small.txt')
+        # self.test_ratings = np.loadtxt('../Data/test_small.txt')
+        self.test_ratings = np.loadtxt(test_file_name)
+
         print("load test data done!")
 
         

@@ -65,7 +65,8 @@ def parse_args():
     parser.add_argument('--top_k', type=int, default=10,
                         help='Number of negative samples per positive one.')
     parser.add_argument('--test', type=int, default=0, help='test flag 0 or 1')
-    parser.add_argument('--model_epoch', type=int, default=1, help='test flag 0 or 1')
+    parser.add_argument('--model_epoch', type=int, default=1, help='')
+    parser.add_argument('--test_file_path', type=str, default="../Data/test_small.txt", help='test file path')
     return parser.parse_args()
 
 
@@ -297,7 +298,7 @@ class MF(BaseEstimator, TransformerMixin):
 if __name__ == '__main__':
     # Data loading
     args = parse_args()
-    interaction_data = Interaction(int_cate=args.dataset, neg_num=args.neg_num)
+    interaction_data = Interaction(int_cate=args.dataset, neg_num=args.neg_num, test_file_name=args.test_file_path)
 
     if args.verbose > 0:
         print(
@@ -316,6 +317,7 @@ if __name__ == '__main__':
     t1 = time()
     model = MF(interaction_data.features_U, interaction_data.features_M, args)
     if args.test == 0:
+        print("train model")
         model.train(interaction_data)
 
         # Find the best validation result across iterations
