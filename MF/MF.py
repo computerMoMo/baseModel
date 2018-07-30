@@ -50,7 +50,7 @@ def parse_args():
                         help='Keep probability (i.e., 1-dropout_ratio) for each deep layer and the Bi-Interaction layer. 1: no dropout. Note that the last index is for the Bi-Interaction layer.')
     parser.add_argument('--lamda', type=float, default=0.01,
                         help='Regularizer for bilinear part.')
-    parser.add_argument('--lr', type=float, default=0.1,
+    parser.add_argument('--lr', type=float, default=0.01,
                         help='Learning rate.')
     parser.add_argument('--loss_type', nargs='?', default='log_loss',
                         help='Specify a loss type (square_loss or log_loss).')
