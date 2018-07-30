@@ -233,6 +233,10 @@ class MF(BaseEstimator, TransformerMixin):
             # valid_hits, valid_ndcgs = self.evaluate(interaction_data.valid_ratings)
             t3 = time()
 
+            # save models
+            print("save model")
+            self.saver.save(sess=self.sess, save_path="Output/models/model_"+str(epoch+1)+".ckpt")
+
             test_hits, test_ndcgs = self.evaluate(interaction_data.test_ratings)
             t4 = time()
 
