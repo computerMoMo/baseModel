@@ -10,7 +10,6 @@ Lizi Liao (liaolizi.llz@gmail.com)
 from __future__ import print_function
 import os
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 import os
 import sys
 import math
@@ -143,7 +142,7 @@ class MF(BaseEstimator, TransformerMixin):
                 self.loss = tf.reduce_sum(tf.nn.l2_loss(self.pos_out - self.labels))
             elif self.loss_type == 'log_loss':
                 self.loss = tf.losses.log_loss(self.labels, self.pos_out)
-
+            self.origin_loss = self.loss
             if self.lambda_bilinear > 0:
                 self.loss += tf.contrib.layers.l2_regularizer(self.lambda_bilinear)(
                     self.weights['feature_embeddings_U'])  # regulizer
@@ -205,8 +204,8 @@ class MF(BaseEstimator, TransformerMixin):
                      self.pos_features_M: np.reshape(batch_pos[:, 1], [-1, 1]),
                      self.labels: batch_pos[:, 2:], self.dropout_keep: self.keep_prob, self.train_phase: True}
 
-        loss, opt = self.sess.run((self.loss, self.optimizer), feed_dict=feed_dict)
-        return loss
+        origin_loss, loss, opt = self.sess.run((self.origin_loss, self.loss, self.optimizer), feed_dict=feed_dict)
+        return origin_loss, loss
 
     def train(self, interaction_data):
         for epoch in range(self.epoch):
@@ -218,9 +217,9 @@ class MF(BaseEstimator, TransformerMixin):
             for i in range(total_batch):
                 print('[%d] over [%d] training done' % (i, total_batch))
                 batch_pos = interaction_data.pos_batch_generator(phase='train', batch_size=self.batch_size)
-                batch_loss = self.partial_fit(batch_pos)
+                batch_origin_loss, batch_loss = self.partial_fit(batch_pos)
                 train_loss += batch_loss / self.neg_samples
-                print("train loss:", train_loss)
+                print("train batch loss:", batch_origin_loss, "train batch reg loss:", batch_loss)
             t2 = time()
             # output validation
             print("train loss:", train_loss)
