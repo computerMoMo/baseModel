@@ -246,15 +246,7 @@ class MF(BaseEstimator, TransformerMixin):
             self.all_ndcg_scores.append(test_ndcgs)
 
             if self.verbose > 0 and epoch % self.verbose == 0:
-                print("Epoch %d [%.1f s]\t train_loss=%.4f valid=[%.4f %.4f %.1f] test=[%.4f %.4f %.1f]" % (epoch + 1,
-                                                                                                            t2 - t1,
-                                                                                                            train_loss,
-                                                                                                            valid_hits,
-                                                                                                            valid_ndcgs,
-                                                                                                            t3 - t2,
-                                                                                                            test_hits[-1],
-                                                                                                            test_ndcgs[-1],
-                                                                                                            t4 - t3))
+                print("Epoch %d [%.1f s]\t train_loss=%.4f  test=[%.4f %.4f %.1f]" % (epoch + 1,t2 - t1,train_loss/total_batch,test_hits[-1],test_ndcgs[-1],t4 - t3))
             if self.early_stop > 0 and self.eva_termination(self.test_ndcgs, increas=True):
                 break
 
