@@ -67,6 +67,7 @@ def parse_args():
     parser.add_argument('--test', type=int, default=0, help='test flag 0 or 1')
     parser.add_argument('--model_epoch', type=int, default=1, help='')
     parser.add_argument('--test_file_path', type=str, default="../Data/test_small.txt", help='test file path')
+    parser.add_argument('--test_result_file_path', type=str, default="test_result.txt", help='test result file path')
     return parser.parse_args()
 
 
@@ -352,7 +353,7 @@ if __name__ == '__main__':
         print("testing...")
         test_hits, test_ndcgs = model.evaluate(interaction_data.test_ratings)
         print("test done")
-        score_writer = codecs.open("Output/"+args.test_file_path+"_result.txt", mode="w", encoding="utf-8")
+        score_writer = codecs.open("Output/"+args.test_result_file_path, mode="w", encoding="utf-8")
         score_writer.write("hit score:")
         for hit_score in test_hits:
             score_writer.write("%.5f\t"%hit_score)
