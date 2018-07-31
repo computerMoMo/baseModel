@@ -167,7 +167,7 @@ class MF(BaseEstimator, TransformerMixin):
                     self.loss)
 
             # init
-            self.saver = tf.train.Saver()
+            self.saver = tf.train.Saver(max_to_keep=10)
             init = tf.global_variables_initializer()
             self.sess = tf.Session()
             self.sess.run(init)
@@ -352,7 +352,7 @@ if __name__ == '__main__':
         print("testing...")
         test_hits, test_ndcgs = model.evaluate(interaction_data.test_ratings)
         print("test done")
-        score_writer = codecs.open("Output/test_results.txt", mode="w", encoding="utf-8")
+        score_writer = codecs.open("Output/"+args.test_file_path+"_result.txt", mode="w", encoding="utf-8")
         score_writer.write("hit score:")
         for hit_score in test_hits:
             score_writer.write("%.5f\t"%hit_score)
