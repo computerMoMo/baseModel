@@ -239,7 +239,11 @@ class MF(BaseEstimator, TransformerMixin):
 
             # save models
             print("save model")
-            self.saver.save(sess=self.sess, save_path="Output/models/model_"+str(epoch+1)+".ckpt")
+            dir_name = "Output/models/lr_%.6f_reg_%.6f" % (self.learning_rate, self.lambda_bilinear)
+            if not os.path.exists(dir_name):
+                os.makedirs(dir_name)
+            self.saver.save(sess=self.sess, save_path=os.path.join(dir_name, "model_%.6f_%.6f_%d_.ckpt" %
+                                                                   (self.learning_rate, self.lambda_bilinear, epoch+1)))
 
             test_hits, test_ndcgs = self.evaluate(interaction_data.test_ratings)
             t4 = time()
@@ -301,6 +305,10 @@ if __name__ == '__main__':
     args = parse_args()
     interaction_data = Interaction(int_cate=args.dataset, neg_num=args.neg_num, test_file_name=args.test_file_path)
 
+    dir_name = "Output/models/lr_%.6f_reg_%.6f" % (args.lr, args.lamda)
+    if not os.path.exists(dir_name):
+        os.makedirs(dir_name)
+
     if args.verbose > 0:
         print(
             "Neural FM: dataset=%s, hidden_factor=%d, dropout_keep=%s,  loss_type=%s,#epoch=%d, batch=%d, lr=%.4f, lambda=%.4f, optimizer=%s, batch_norm=%d, activation=%s, early_stop=%d"
@@ -329,14 +337,9 @@ if __name__ == '__main__':
         model.test_ndcgs[best_epoch], time() - t1)
         print(final_results)
 
-        save_path = 'Output/' + args.dataset + '/mf_%d.result' % (args.neg_num)
-        ensureDir(save_path)
-        f = open(save_path, 'a')
+        score_writer = codecs.open(dir_name+"Output/scores.txt", mode="w", encoding="utf-8")
+        score_writer.write(final_results+"\n")
 
-        f.write('MF: lambda=%.4f, lr=%.4f, top_k=%d, %s\n' % (args.lamda, args.lr, args.top_k, final_results))
-        f.close()
-
-        score_writer = codecs.open("Output/scores.txt", mode="w", encoding="utf-8")
         for epoch_id, (hit_item, ndcg_item) in enumerate(zip(model.all_hit_scores, model.all_ndcg_scores)):
             score_writer.write("epoch %d:hit score:" % (epoch_id+1))
             for hit_score in hit_item:
